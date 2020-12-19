@@ -3,8 +3,8 @@ import pandas as pd
 import scipy.stats as st
 import math
 
-df = pd.read_excel('Data/DEPs.xlsx','575')
 
+df = pd.read_excel('Data/DEPs.xlsx','575')
 dict={"CC":'CC1	CC2	CC3	CC4	CC5	CC6	CC7	CC8	CC9	CC10	CC11	CC12	CC13	CC14	CC15	CC16	CC17	CC18'.split('\t'),
       "HC":'HC1	HC2	HC3	HC4	HC5	HC6	HC7	HC8	HC9	HC10	HC11	HC12'.split('\t')
       }
