@@ -7,6 +7,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve
 import random
+import math
+
 
 df = pd.read_excel('Data/DEPs.xlsx','DEPs_CC-sp')
 df1 = pd.read_excel('Data/DEPs.xlsx','DEPs_CC vs HC')
@@ -43,6 +45,12 @@ while rd1.__len__()<10:
 
 
 #FBD
+def get_rmse(records_real, records_predict):
+    if len(records_real) == len(records_predict):
+        return math.sqrt(sum([(x - y) ** 2 for x, y in zip(records_real, records_predict)]) / len(records_real))
+    else:
+        return None
+
 for li,lis in enumerate(rd1):
     X = df1.loc[lis, ind].T.values
     y = np.array([1 if x in indp else 0 for x in ind])
@@ -58,7 +66,7 @@ for li,lis in enumerate(rd1):
         result.append(coef.tolist())
         y_test_scores = clf.predict_proba(X_test)[:, 1]
         AUC = roc_auc_score(y_test, y_test_scores)
-        joblib.dump(clf, filename=str(n) + '/Severe to fatal.model')
+        joblib.dump(clf, filename=str(n) + '/Protein_CC vs HC.model')
         return y_test, y_test_scores, result, AUC
 
     tests = np.array([])
@@ -87,6 +95,7 @@ for li,lis in enumerate(rd1):
                 y_test = y[test]
                 y_test, y_test_score, result, AUC = Train_fold(X_train, y_train, X_test, y_test,'l2')
                 print(lis1, AUC)
+            rmse1 = get_rmse(y_tests, y_test_scores)
         Skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=r)
         for i, (train, test) in enumerate(Skf.split(X1, y1)):
             X_train = X1[train]
@@ -101,13 +110,17 @@ for li,lis in enumerate(rd1):
                     lis1.append(rd2[li][wi])
             XX1 = df2.loc[lis1, ind1].T.values
             Skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=r)
+            y_tests, y_test_scores=[],[]
             for i, (train, test) in enumerate(Skf.split(XX1, y1)):
                 X_train = XX1[train]
                 y_train = y1[train]
                 X_test = XX1[test]
                 y_test = y1[test]
                 y_test, y_test_score, result, AUC = Train_fold(X_train, y_train, X_test, y_test,'l2')
+                y_tests=y_tests+y_test
+                y_test_scores=y_test_scores+X_test
                 print(lis1, AUC)
+            rmse1 = get_rmse(y_tests, y_test_scores)
 
 
 
