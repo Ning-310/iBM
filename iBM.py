@@ -21,7 +21,7 @@ indn1 = 'AC1	AC2	AC3	AC4	AC5	AC6	AC7	AC8	AC9	AC10	AC11	AC12	AC13	AC14	AC15	AC16	
 ind1 = indp1 + indn1
 
 
-#CBS
+#CCG
 def random_int_list(start, stop, length):
     start, stop = (int(start), int(stop)) if start <= stop else (int(stop), int(start))
     length = int(abs(length)) if length else 0
@@ -44,18 +44,20 @@ while rd1.__len__()<10:
         rd2.append(rd02)
 
 
-#FBD
+#FCP
 def get_rmse(records_real, records_predict):
     if len(records_real) == len(records_predict):
         return math.sqrt(sum([(x - y) ** 2 for x, y in zip(records_real, records_predict)]) / len(records_real))
     else:
         return None
 
+
 for li,lis in enumerate(rd1):
     X = df1.loc[lis, ind].T.values
     y = np.array([1 if x in indp else 0 for x in ind])
     X1 = df2.loc[rd2[li], ind1].T.values
     y1 = np.array([1 if x in indp1 else 0 for x in ind1])
+
     def Train_fold(X_train, y_train, X_test, y_test, l):
         Clist = [1]
         clf = LogisticRegressionCV(Cs=Clist, penalty=l, fit_intercept=False, cv=5, solver='liblinear', n_jobs=4,
@@ -88,14 +90,17 @@ for li,lis in enumerate(rd1):
                     lis1.append(lis[wi])
             XX = df1.loc[lis1, ind].T.values
             Skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=r)
+            y_tests, y_test_scores = [], []
             for i, (train, test) in enumerate(Skf.split(XX, y)):
                 X_train = XX[train]
                 y_train = y[train]
                 X_test = XX[test]
                 y_test = y[test]
                 y_test, y_test_score, result, AUC = Train_fold(X_train, y_train, X_test, y_test,'l2')
+                y_tests = y_tests + y_test
+                y_test_scores = y_test_scores + X_test
                 print(lis1, AUC)
-            rmse1 = get_rmse(y_tests, y_test_scores)
+            rmse = get_rmse(y_tests, y_test_scores)
         Skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=r)
         for i, (train, test) in enumerate(Skf.split(X1, y1)):
             X_train = X1[train]
